@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AlgoTradingBot - Meta Ad</title>
+  <title>AlgoTradingBot</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
@@ -79,19 +79,9 @@
       class="absolute top-0 left-0 w-full h-full object-cover z-0"></video>
     <div class="absolute inset-0 bg-black/10 z-10 pointer-events-none"></div>
 
-    <!-- Unmute Overlay -->
-    <div id="unmuteOverlay"
-      class="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity duration-300">
-      <div
-        class="flex flex-col items-center gap-3 p-6 bg-black/60 rounded-2xl border border-white/20 shadow-2xl animate-pulse">
-        <i data-lucide="volume-x" class="w-12 h-12 text-white"></i>
-        <span class="text-white font-bold text-lg tracking-wide text-center">Tap anywhere<br>to turn on sound</span>
-      </div>
-    </div>
-
     <!-- Top Header Overlay -->
     <div
-      class="absolute top-0 w-full pt-4 px-4 pb-12 z-20 bg-gradient-to-b from-black/60 to-transparent flex items-center justify-between">
+      class="absolute top-0 w-full pt-4 px-4 pb-12 z-20 bg-gradient-to-b from-black/60 to-transparent flex items-center justify-between pointer-events-none">
       <div class="flex items-center gap-2">
         <!-- Algo Logo -->
         <div class="w-8 h-8 rounded-md flex items-center justify-center p-[2px]"
@@ -141,7 +131,7 @@
       </div>
 
       <!-- WhatsApp CTA -->
-      <a href="http://wa.me/918240026380" target="_blank"
+      <a href="https://wa.me/918240026380?text=Need%20this%20Bot%20Tsukuyomi%20V1.0" target="_blank"
         class="w-full bg-[#25D366] hover:bg-[#20b858] transition-colors rounded-lg py-3 px-4 flex items-center justify-between cursor-pointer shadow-[0_0_15px_rgba(37,211,102,0.3)]">
         <div class="flex items-center gap-2">
           <!-- WhatsApp SVG Icon -->
@@ -190,37 +180,47 @@
   <script>
     lucide.createIcons();
 
-    document.addEventListener('DOMContentLoaded', () => {
+    (function () {
       const video = document.getElementById('bgVideo');
-      const unmuteOverlay = document.getElementById('unmuteOverlay');
-      const mainBody = document.getElementById('mainBody');
-      let isMuted = true;
+      let soundActivated = false;
 
-      // Force play visually (muted)
-      video.play().catch(e => console.log('Autoplay blocked:', e));
+      // Video starts muted via HTML attribute — it will autoplay fine
 
-      // Handle the first click (unmute) and subsequent clicks (redirect)
-      mainBody.addEventListener('click', (e) => {
-        // If they click the WhatsApp button explicitly, redirect immediately
-        if (e.target.closest('a')) {
-          return;
-        }
+      // On FIRST click/touch anywhere — activate sound
+      function activateSound() {
+        if (soundActivated) return;
+        soundActivated = true;
 
-        if (isMuted) {
-          // First click on background: Unmute the video
-          e.preventDefault();
-          video.muted = false;
-          video.currentTime = 0; // Restart video with sound
-          video.play();
-          unmuteOverlay.style.opacity = '0';
-          setTimeout(() => { unmuteOverlay.style.display = 'none'; }, 300);
-          isMuted = false;
-        } else {
-          // Second click anywhere: Redirect to WhatsApp
-          window.location.href = 'http://wa.me/918240026380';
-        }
-      });
-    });
+        // Remove both HTML attribute AND JS property
+        video.removeAttribute('muted');
+        video.muted = false;
+        video.volume = 1.0;
+
+        // Pause and replay to force audio pipeline reset
+        const currentPos = video.currentTime;
+        video.pause();
+        video.currentTime = currentPos;
+        video.play().then(() => {
+          console.log('Audio activated successfully!');
+        }).catch(err => {
+          console.error('Audio activation failed:', err);
+        });
+      }
+
+      // Listen on body directly
+      document.body.addEventListener('click', function (e) {
+        // If clicking WhatsApp link, let it through always
+        if (e.target.closest('a')) return;
+
+        // Activate sound + redirect on FIRST click itself
+        activateSound();
+        window.location.href = 'https://wa.me/918240026380?text=Need%20this%20Bot%20Tsukuyomi%20V1.0';
+      }, true);
+
+      document.body.addEventListener('touchstart', function () {
+        activateSound();
+      }, { once: true, passive: true });
+    })();
   </script>
 </body>
 
